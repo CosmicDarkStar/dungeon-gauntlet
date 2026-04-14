@@ -24,8 +24,9 @@ class Player:
     def __init__(self, x: float, y: float):
         self.fx   = float(x)    # float world position
         self.fy   = float(y)
-        self.hp   = float(PLAYER_MAX_HP)
+        self.hp    = float(PLAYER_MAX_HP)
         self.score = 0
+        self.coins = 0
         self._dx   = 0.0
         self._dy   = 0.0
         self.facing = (1, 0)    # last non-zero move direction (raw ints)

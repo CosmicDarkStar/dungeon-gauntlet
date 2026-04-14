@@ -63,3 +63,14 @@ DEMON_SHOT_DMG = 10
 GENERATOR_HP         = 12
 GENERATOR_SPAWN_TIME = 5.0   # s between spawns
 MAX_MONSTERS         = 80    # hard cap
+
+# ── Drops ─────────────────────────────────────────────────────────────────────
+HEALTH_DROP_CHANCE = 0.30    # probability a killed monster drops health
+HEALTH_DROP_MIN    = 10      # HP restored
+HEALTH_DROP_MAX    = 20
+COIN_DROP_MIN      = 5       # coins dropped by a destroyed generator
+COIN_DROP_MAX      = 15
+DROP_PICKUP_RADIUS = 22      # px from player centre to collect
+
+COL_HEALTH_DROP = ( 60, 220,  80)   # bright green
+COL_COIN_DROP   = (255, 200,  30)   # gold

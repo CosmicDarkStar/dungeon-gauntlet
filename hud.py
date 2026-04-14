@@ -4,7 +4,7 @@ from settings import *
 
 
 class HUD:
-    HEIGHT = 52
+    HEIGHT = 66
 
     def __init__(self, screen_w: int, screen_h: int):
         self.sw = screen_w
@@ -37,6 +37,10 @@ class HUD:
         lbl = self.font_sm.render(f'HP  {int(player.hp):>3} / {PLAYER_MAX_HP}',
                                   True, (220, 200, 200))
         surface.blit(lbl, (bx + 6, by + 4))
+
+        # ── Coin counter (below HP bar) ───────────────────────────────────────
+        coin_lbl = self.font_sm.render(f'\u25c6  {player.coins} coins', True, COL_COIN_DROP)
+        surface.blit(coin_lbl, (bx + 6, by + bh + 6))
 
         # ── Score (centre) ────────────────────────────────────────────────────
         sc = self.font_lg.render(f'SCORE  {player.score:>6}', True, COL_SCORE)

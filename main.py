@@ -1,6 +1,7 @@
 # main.py — Dungeon Gauntlet entry point and game loop
 # Requires: pip install pygame
 import sys
+import random
 import pygame
 from settings import *
 from map import TileMap
@@ -9,6 +10,7 @@ from player import Player
 from monster import Monster
 from generator import Generator
 from projectile import Projectile
+from drop import Drop
 from hud import HUD
 
 
@@ -88,6 +90,7 @@ def _play_game(screen: pygame.Surface, sw: int, sh: int):
     generators  = [Generator(tx, ty) for tx, ty in tilemap.generator_tiles]
     monsters:    list[Monster]    = []
     projectiles: list[Projectile] = []
+    drops:       list[Drop]       = []
     hud         = HUD(sw, sh)
     level       = 1
 
@@ -135,6 +138,11 @@ def _play_game(screen: pygame.Surface, sw: int, sh: int):
                         p.alive = False
                         if not m.alive:
                             player.score += m.score_value
+                            if random.random() < HEALTH_DROP_CHANCE:
+                                cx, cy = m.rect.center
+                                drops.append(Drop(cx, cy, 'health',
+                                                  random.randint(HEALTH_DROP_MIN,
+                                                                 HEALTH_DROP_MAX)))
                         break
                 # vs generators (only if still alive after monster check)
                 if p.alive:
@@ -144,15 +152,29 @@ def _play_game(screen: pygame.Surface, sw: int, sh: int):
                             p.alive = False
                             if not gen.alive:
                                 player.score += 100
+                                cx, cy = gen.rect.center
+                                drops.append(Drop(cx, cy, 'coin',
+                                                  random.randint(COIN_DROP_MIN,
+                                                                 COIN_DROP_MAX)))
                             break
             elif p.owner == 'monster':
                 if p.rect.colliderect(player.rect):
                     player.take_damage(DEMON_SHOT_DMG)
                     p.alive = False
 
+        # ── Drops: update, pickup, cull ───────────────────────────────────────
+        for d in drops:
+            d.update(dt)
+            if d.check_pickup(player):
+                if d.kind == 'health':
+                    player.hp = min(PLAYER_MAX_HP, player.hp + d.value)
+                else:
+                    player.coins += d.value
+
         # ── Cull dead ────────────────────────────────────────────────────────
         monsters    = [m for m in monsters    if m.alive]
         projectiles = [p for p in projectiles if p.alive]
+        drops       = [d for d in drops       if d.alive]
 
         # ── Camera ───────────────────────────────────────────────────────────
         camera.update(player.rect)
@@ -163,6 +185,8 @@ def _play_game(screen: pygame.Surface, sw: int, sh: int):
 
         for gen in generators:
             gen.draw(screen, camera)
+        for d in drops:
+            d.draw(screen, camera)
         for m in monsters:
             m.draw(screen, camera)
         for p in projectiles:
