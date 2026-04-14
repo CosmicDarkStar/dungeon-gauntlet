@@ -68,7 +68,8 @@ class Monster:
         # Contact damage
         if self.rect.colliderect(player.rect):
             if self.mtype == 'ghost':
-                # Ghost sacrifices itself on touch for a single burst of damage
+                # Ghost sacrifices itself on touching the player only —
+                # other monsters are unaffected by this contact.
                 player.take_damage(GHOST_TOUCH_DMG)
                 self.alive = False
                 self.hp    = 0
