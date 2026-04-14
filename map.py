@@ -68,11 +68,6 @@ class TileMap:
         self.player_start = (cx * TILE + TILE // 2 - (TILE - 4) // 2,
                              cy * TILE + TILE // 2 - (TILE - 4) // 2)
 
-        # Exit portal: room whose centre is farthest from the player start room
-        start_centre = self.rooms[0].center
-        farthest = max(self.rooms[1:], key=lambda r: _dist(r.center, start_centre))
-        self.exit_tile = farthest.center   # tile coords (tx, ty)
-
         # One generator per room, skip first two (safe start zone)
         for room in self.rooms[2:]:
             cx, cy = room.center
@@ -81,6 +76,21 @@ class TileMap:
             gx = max(room.x + 1, min(room.x + room.w - 2, gx))
             gy = max(room.y + 1, min(room.y + room.h - 2, gy))
             self.generator_tiles.append((gx, gy))
+
+        # Exit portal: farthest room from player start whose centre is at
+        # least 2 tiles (Manhattan) from every generator tile.
+        start_centre  = self.rooms[0].center
+        sorted_rooms  = sorted(self.rooms[1:],
+                               key=lambda r: _dist(r.center, start_centre),
+                               reverse=True)
+        for room in sorted_rooms:
+            ec = room.center
+            if all(_dist(ec, g) >= 2 for g in self.generator_tiles):
+                self.exit_tile = ec
+                break
+        else:
+            # Fallback: just use the farthest room regardless
+            self.exit_tile = sorted_rooms[0].center
 
     def _carve_room(self, room: Room):
         for ty in range(room.y, room.y + room.h):
