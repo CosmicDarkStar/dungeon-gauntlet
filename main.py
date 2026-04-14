@@ -204,11 +204,11 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
         player.fy = float(tilemap.player_start[1])
 
     spawn_time  = GENERATOR_SPAWN_TIME * diff['spawn_mult']
-    generators  = [Generator(tx, ty,
+    generators  = [Generator(tx, ty, mtype,
                               spawn_time=spawn_time,
                               hp_mult=diff['hp_mult'],
                               dmg_mult=diff['dmg_mult'])
-                   for tx, ty in tilemap.generator_tiles]
+                   for tx, ty, mtype in tilemap.generator_tiles]
     monsters:    list[Monster]    = []
     projectiles: list[Projectile] = []
     drops:       list[Drop]       = []

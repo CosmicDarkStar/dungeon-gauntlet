@@ -28,9 +28,14 @@ COL_GHOST    = ( 80, 210, 210)   # cyan
 COL_DEMON    = (210, 110,  20)   # orange
 COL_SHOT_D   = (255,  80,  80)   # red
 
-COL_GENERATOR = (170,   0, 200)  # purple
 COL_GEN_DEAD  = ( 55,  45,  65)
-COL_GEN_EDGE  = (255, 160, 255)
+
+# Per-type generator palette (fill, edge) — matches the monster colours
+GEN_TYPE_COLORS = {
+    'grunt': ((160,  20,  40), (255, 110, 130)),
+    'ghost': (( 15, 130, 160), (110, 235, 255)),
+    'demon': ((165,  65,  10), (255, 175,  55)),
+}
 
 # HUD
 COL_HUD_BG   = ( 12,   8,  24)
@@ -63,6 +68,11 @@ DEMON_SHOT_DMG = 10
 GENERATOR_HP         = 12
 GENERATOR_SPAWN_TIME = 5.0   # s between spawns
 MAX_MONSTERS         = 80    # hard cap
+
+# Generator placement
+ROOM_GEN_COUNTS      = [1, 2, 3]   # possible generators per room …
+ROOM_GEN_WEIGHTS     = [60, 30, 10] # … and their relative probabilities
+CORRIDOR_GEN_CHANCE  = 0.008        # per-corridor-tile chance of a generator
 
 # ── Drops ─────────────────────────────────────────────────────────────────────
 HEALTH_DROP_CHANCE = 0.30    # probability a killed monster drops health
