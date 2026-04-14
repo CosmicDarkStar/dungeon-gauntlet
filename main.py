@@ -18,15 +18,77 @@ def run():
     SW, SH = info.current_w, info.current_h
     screen = pygame.display.set_mode((SW, SH), pygame.FULLSCREEN)
     pygame.display.set_caption("DUNGEON GAUNTLET")
-    clock  = pygame.time.Clock()
+
+    while True:
+        if not _start_menu(screen, SW, SH):
+            break
+        _play_game(screen, SW, SH)
+
+    pygame.quit()
+    sys.exit()
+
+
+def _start_menu(screen: pygame.Surface, sw: int, sh: int) -> bool:
+    """Display the start menu. Returns True to start a new game, False to quit."""
+    font_title = pygame.font.SysFont('monospace', 80, bold=True)
+    font_opt   = pygame.font.SysFont('monospace', 36, bold=True)
+    font_hint  = pygame.font.SysFont('monospace', 20)
+
+    options  = ['NEW GAME', 'QUIT']
+    selected = 0
+    clock    = pygame.time.Clock()
+
+    while True:
+        screen.fill(DARK_BG)
+
+        # Title
+        t1 = font_title.render('DUNGEON',  True, COL_PLAYER)
+        t2 = font_title.render('GAUNTLET', True, COL_DEMON)
+        screen.blit(t1, (sw // 2 - t1.get_width() // 2, sh // 3 - 70))
+        screen.blit(t2, (sw // 2 - t2.get_width() // 2, sh // 3 + 30))
+
+        # Menu options
+        for i, label in enumerate(options):
+            active = i == selected
+            colour = COL_SHOT_P if active else COL_INFO
+            prefix = '>  ' if active else '   '
+            surf = font_opt.render(prefix + label, True, colour)
+            screen.blit(surf, (sw // 2 - surf.get_width() // 2,
+                                sh // 2 + 70 + i * 60))
+
+        # Controls hint
+        hint = font_hint.render('W / S  or  \u2191\u2193  to select     ENTER to confirm',
+                                True, COL_INFO)
+        screen.blit(hint, (sw // 2 - hint.get_width() // 2, sh - 55))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_w, pygame.K_UP):
+                    selected = (selected - 1) % len(options)
+                elif event.key in (pygame.K_s, pygame.K_DOWN):
+                    selected = (selected + 1) % len(options)
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    return selected == 0
+                elif event.key == pygame.K_ESCAPE:
+                    return False
+
+
+def _play_game(screen: pygame.Surface, sw: int, sh: int):
+    """Run one full game session, then return (no sys.exit)."""
+    clock = pygame.time.Clock()
 
     tilemap     = TileMap()
-    camera      = Camera(SW, SH)
+    camera      = Camera(sw, sh)
     player      = Player(*tilemap.player_start)
     generators  = [Generator(tx, ty) for tx, ty in tilemap.generator_tiles]
     monsters:    list[Monster]    = []
     projectiles: list[Projectile] = []
-    hud         = HUD(SW, SH)
+    hud         = HUD(sw, sh)
     level       = 1
 
     # Pre-seed a few monsters so the dungeon feels alive immediately
@@ -114,11 +176,8 @@ def run():
 
         # ── Game over check ───────────────────────────────────────────────────
         if player.hp <= 0:
-            _game_over(screen, player, SW, SH)
+            _game_over(screen, player, sw, sh)
             running = False
-
-    pygame.quit()
-    sys.exit()
 
 
 def _game_over(screen: pygame.Surface, player, sw: int, sh: int):
@@ -132,7 +191,7 @@ def _game_over(screen: pygame.Surface, player, sw: int, sh: int):
 
     t1 = font_big.render('GAME  OVER', True, (220, 50, 50))
     t2 = font_med.render(f'FINAL SCORE :  {player.score}', True, COL_SCORE)
-    t3 = font_sm .render('Press any key to exit', True, COL_INFO)
+    t3 = font_sm .render('Press any key to return to menu', True, COL_INFO)
 
     screen.blit(t1, (sw // 2 - t1.get_width() // 2, sh // 2 - 90))
     screen.blit(t2, (sw // 2 - t2.get_width() // 2, sh // 2 + 10))
