@@ -51,6 +51,11 @@ class Monster:
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.fx), int(self.fy), self.SIZE, self.SIZE)
 
+    @property
+    def current_dmg(self) -> float:
+        """Damage output scales down as the monster loses HP (min 30 %)."""
+        return self.dmg * max(0.3, self.hp / self.max_hp)
+
     # ── Update ────────────────────────────────────────────────────────────────
 
     def update(self, dt: float, tilemap, player, projectiles: list,
@@ -74,7 +79,7 @@ class Monster:
                 self.alive = False
                 self.hp    = 0
             else:
-                player.take_damage(self.dmg * dt)
+                player.take_damage(self.current_dmg * dt)
 
     # ── Private ───────────────────────────────────────────────────────────────
 
@@ -142,10 +147,11 @@ class Monster:
         dist   = math.hypot(dx, dy)
         if dist < 1:
             return
+        # Shot damage scales with remaining HP (same as contact damage)
         projectiles.append(
             Projectile(cx, cy, dx / dist, dy / dist,
                        COL_SHOT_D, SHOT_SPEED * 0.55, SHOT_RANGE * 0.75, 'monster',
-                       damage=DEMON_SHOT_DMG))
+                       damage=self.current_dmg))
 
     # ── Public ────────────────────────────────────────────────────────────────
 

@@ -66,7 +66,6 @@ GHOST_TOUCH_DMG = 15  # flat damage when a ghost touches the player (then dies)
 DEMON_DMG      = 12
 DEMON_SHOT_DMG = 10
 
-GENERATOR_HP         = 12
 GENERATOR_SPAWN_TIME = 5.0   # s between spawns
 MAX_MONSTERS         = 80    # hard cap
 
@@ -74,6 +73,14 @@ MAX_MONSTERS         = 80    # hard cap
 ROOM_GEN_COUNTS      = [1, 2, 3]   # possible generators per room …
 ROOM_GEN_WEIGHTS     = [60, 30, 10] # … and their relative probabilities
 CORRIDOR_GEN_CHANCE  = 0.008        # per-corridor-tile chance of a generator
+
+# Generator tiers (1 = weak, 2 = medium, 3 = strong)
+GEN_TIER_HP        = {1: 10, 2: 18, 3: 28}   # max HP per tier
+GEN_TIER_HP_MULT   = {1: 1.0, 2: 1.6, 3: 2.5}  # extra monster HP mult
+GEN_TIER_DMG_MULT  = {1: 1.0, 2: 1.4, 3: 1.9}  # extra monster dmg mult
+GEN_TIER_SCORE     = {1: 75,  2: 150, 3: 275}   # score for destroying
+GEN_TIER_COINS_MIN = {1: 4,   2: 10,  3: 20}
+GEN_TIER_COINS_MAX = {1: 10,  2: 22,  3: 40}
 
 # ── Drops ─────────────────────────────────────────────────────────────────────
 HEALTH_DROP_CHANCE = 0.30    # probability a killed monster drops health
@@ -106,11 +113,15 @@ UPGRADE_COST_DAMAGE    = [20, 35,  55,  80, 110]
 
 # ── Difficulty ────────────────────────────────────────────────────────────────
 DIFFICULTY_PRESETS = {
-    'easy':   dict(label='EASY',   hp_mult=0.6, dmg_mult=0.6, spawn_mult=1.5, gen_count=6),
-    'normal': dict(label='NORMAL', hp_mult=1.0, dmg_mult=1.0, spawn_mult=1.0, gen_count=9),
-    'hard':   dict(label='HARD',   hp_mult=1.5, dmg_mult=1.5, spawn_mult=0.7, gen_count=12),
+    'easy':   dict(label='EASY',   hp_mult=0.6, dmg_mult=0.6, spawn_mult=1.5, gen_count=6,
+                   tier_weights=[70, 25,  5]),
+    'normal': dict(label='NORMAL', hp_mult=1.0, dmg_mult=1.0, spawn_mult=1.0, gen_count=9,
+                   tier_weights=[45, 40, 15]),
+    'hard':   dict(label='HARD',   hp_mult=1.5, dmg_mult=1.5, spawn_mult=0.7, gen_count=12,
+                   tier_weights=[20, 45, 35]),
 }
 LEVEL_HP_SCALE    = 0.15   # monster HP multiplier added per level
 LEVEL_DMG_SCALE   = 0.10   # monster damage multiplier added per level
 LEVEL_SPAWN_SCALE = 0.05   # spawn_mult reduced per level (faster spawns)
 LEVEL_GEN_SCALE   = 1      # extra generators added per level
+LEVEL_TIER_SHIFT  = 5      # weight shifted from tier-1 to tier-3 per level

@@ -158,6 +158,13 @@ def _scale_difficulty(base: str, level: int) -> dict:
     s['dmg_mult']   = round(s['dmg_mult']   + n * LEVEL_DMG_SCALE,   3)
     s['spawn_mult'] = round(max(0.3, s['spawn_mult'] - n * LEVEL_SPAWN_SCALE), 3)
     s['gen_count']  = min(18, s['gen_count'] + n * LEVEL_GEN_SCALE)
+
+    # Shift generator tier weights toward stronger tiers each level
+    w      = list(s['tier_weights'])
+    shift  = min(n * LEVEL_TIER_SHIFT, 30)
+    w[0]   = max(5, w[0] - shift)
+    w[2]  += shift
+    s['tier_weights'] = w
     return s
 
 
@@ -206,6 +213,8 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
 
     spawn_time  = GENERATOR_SPAWN_TIME * diff['spawn_mult']
     generators  = [Generator(tx, ty, mtype,
+                              tier=random.choices([1, 2, 3],
+                                                  weights=diff['tier_weights'])[0],
                               spawn_time=spawn_time,
                               hp_mult=diff['hp_mult'],
                               dmg_mult=diff['dmg_mult'])
@@ -273,11 +282,12 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
                             gen.take_damage(p.damage)
                             p.alive = False
                             if not gen.alive:
-                                player.score += 100
+                                player.score += GEN_TIER_SCORE[gen.tier]
                                 cx, cy = gen.rect.center
                                 drops.append(Drop(cx, cy, 'coin',
-                                                  random.randint(COIN_DROP_MIN,
-                                                                 COIN_DROP_MAX)))
+                                                  random.randint(
+                                                      GEN_TIER_COINS_MIN[gen.tier],
+                                                      GEN_TIER_COINS_MAX[gen.tier])))
                             break
             elif p.owner == 'monster':
                 # Shots can't pass through other monsters (friendly fire,
