@@ -202,6 +202,7 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
     else:
         player.fx = float(tilemap.player_start[0])
         player.fy = float(tilemap.player_start[1])
+        player.hp = float(PLAYER_MAX_HP)
 
     spawn_time  = GENERATOR_SPAWN_TIME * diff['spawn_mult']
     generators  = [Generator(tx, ty, mtype,
