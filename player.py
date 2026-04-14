@@ -116,8 +116,15 @@ class Player:
             self.fy = new_fy
 
     def _overlaps_monster(self, rect: pygame.Rect, monsters: list) -> bool:
+        current = self.rect
         for m in monsters:
-            if m.alive and rect.colliderect(m.rect):
+            if not m.alive:
+                continue
+            # If this monster is already touching us, don't use it to block
+            # movement — the player must be free to disengage.
+            if m.rect.colliderect(current):
+                continue
+            if m.rect.colliderect(rect):
                 return True
         return False
 
