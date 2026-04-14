@@ -328,10 +328,6 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
             _level_complete_flash(screen, sw, sh, level)
             return 'complete', player
 
-        if generators and all(not g.alive for g in generators):
-            _level_complete_flash(screen, sw, sh, level)
-            return 'complete', player
-
 
 # ── Exit portal drawing ───────────────────────────────────────────────────────
 
