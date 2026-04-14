@@ -86,26 +86,39 @@ class Monster:
             self._wander_t += dt * 1.8
             perp = math.sin(self._wander_t) * 0.35
             wnx  = nx - ny * perp
-            wny  = ny + nx * perp   # uses original nx
+            wny  = ny + nx * perp
             ln   = math.hypot(wnx, wny)
             if ln > 0.001:
                 nx, ny = wnx / ln, wny / ln
 
         step = self.speed * dt
 
-        # X axis
-        new_fx = self.fx + nx * step
-        test_x = pygame.Rect(int(new_fx), int(self.fy), self.SIZE, self.SIZE)
-        if (self.through_walls or not _wall_check(tilemap, test_x)) \
-                and not self._overlaps_monster(test_x, monsters):
-            self.fx = new_fx
+        def _free(fx, fy):
+            r = pygame.Rect(int(fx), int(fy), self.SIZE, self.SIZE)
+            if not self.through_walls and _wall_check(tilemap, r):
+                return False
+            return not self._overlaps_monster(r, monsters)
 
-        # Y axis
+        new_fx = self.fx + nx * step
         new_fy = self.fy + ny * step
-        test_y = pygame.Rect(int(self.fx), int(new_fy), self.SIZE, self.SIZE)
-        if (self.through_walls or not _wall_check(tilemap, test_y)) \
-                and not self._overlaps_monster(test_y, monsters):
-            self.fy = new_fy
+
+        # Priority chain — first free candidate wins:
+        #   1. full diagonal  (ideal path)
+        #   2. X-only slide   (wall on Y side)
+        #   3. Y-only slide   (wall on X side)
+        #   4. perp-left      (-ny,  nx) — steer around the corner
+        #   5. perp-right     ( ny, -nx) — other side of the corner
+        for cfx, cfy in (
+            (new_fx,              new_fy             ),
+            (new_fx,              self.fy            ),
+            (self.fx,             new_fy             ),
+            (self.fx - ny * step, self.fy + nx * step),
+            (self.fx + ny * step, self.fy - nx * step),
+        ):
+            if _free(cfx, cfy):
+                self.fx = cfx
+                self.fy = cfy
+                return
 
     def _overlaps_monster(self, rect: pygame.Rect, monsters: list) -> bool:
         for m in monsters:
