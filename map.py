@@ -18,7 +18,7 @@ class Room:
 
 
 class TileMap:
-    def __init__(self, width=MAP_W, height=MAP_H, seed=None):
+    def __init__(self, width=MAP_W, height=MAP_H, seed=None, max_generators=None):
         if seed is not None:
             random.seed(seed)
         self.width  = width
@@ -28,6 +28,8 @@ class TileMap:
         self.generator_tiles: list[tuple[int, int]] = []
         self.player_start: tuple[int, int] = (TILE * 5, TILE * 5)
         self._generate()
+        if max_generators is not None:
+            self.generator_tiles = self.generator_tiles[:max_generators]
 
     # ── Generation ───────────────────────────────────────────────────────────
 

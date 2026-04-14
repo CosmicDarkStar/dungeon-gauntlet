@@ -9,14 +9,19 @@ class Generator:
     W = TILE
     H = TILE
 
-    def __init__(self, tx: int, ty: int):
-        self.rect      = pygame.Rect(tx * TILE, ty * TILE, self.W, self.H)
-        self.hp        = float(GENERATOR_HP)
-        self.max_hp    = float(GENERATOR_HP)
-        self.alive     = True
-        self._timer    = random.uniform(0.5, GENERATOR_SPAWN_TIME)
-        self._pulse    = 0.0
-        self._pulse_dir = 1
+    def __init__(self, tx: int, ty: int,
+                 spawn_time: float = GENERATOR_SPAWN_TIME,
+                 hp_mult: float = 1.0, dmg_mult: float = 1.0):
+        self.rect        = pygame.Rect(tx * TILE, ty * TILE, self.W, self.H)
+        self.hp          = float(GENERATOR_HP)
+        self.max_hp      = float(GENERATOR_HP)
+        self.alive       = True
+        self._spawn_time = spawn_time
+        self._timer      = random.uniform(0.5, spawn_time)
+        self._pulse      = 0.0
+        self._pulse_dir  = 1
+        self._hp_mult    = hp_mult
+        self._dmg_mult   = dmg_mult
 
     # ── Update ────────────────────────────────────────────────────────────────
 
@@ -26,7 +31,7 @@ class Generator:
 
         self._timer -= dt
         if self._timer <= 0:
-            self._timer = GENERATOR_SPAWN_TIME
+            self._timer = self._spawn_time
             self._try_spawn(monsters, tilemap)
 
         self._pulse += dt * self._pulse_dir * 2.2
@@ -49,7 +54,9 @@ class Generator:
                     ['grunt', 'ghost', 'demon'],
                     weights=[6, 3, 1]
                 )[0]
-                monsters.append(Monster(nx * TILE, ny * TILE, mtype))
+                monsters.append(Monster(nx * TILE, ny * TILE, mtype,
+                                        hp_mult=self._hp_mult,
+                                        dmg_mult=self._dmg_mult))
                 return
 
     # ── Public ────────────────────────────────────────────────────────────────

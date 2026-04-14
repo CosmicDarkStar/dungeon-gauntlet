@@ -74,3 +74,28 @@ DROP_PICKUP_RADIUS = 22      # px from player centre to collect
 
 COL_HEALTH_DROP = ( 60, 220,  80)   # bright green
 COL_COIN_DROP   = (255, 200,  30)   # gold
+
+# ── Player upgrades ───────────────────────────────────────────────────────────
+MAX_UPGRADE_LEVEL   = 5
+ATTR_DEFENCE_REDUX  = 0.08   # damage reduction fraction per defence level
+ATTR_RANGE_BONUS    = 100    # extra px of shot range per level
+ATTR_MAX_SHOTS_BASE = 3      # shots allowed on screen at upgrade level 0
+ATTR_DAMAGE_BASE    = 1      # shot damage at upgrade level 0
+ATTR_DAMAGE_BONUS   = 1      # extra damage per upgrade level
+
+# Cost in coins to buy each upgrade level (index 0 = buying level 1, etc.)
+UPGRADE_COST_DEFENCE   = [20, 35,  55,  80, 110]
+UPGRADE_COST_RANGE     = [15, 25,  40,  60,  85]
+UPGRADE_COST_MAX_SHOTS = [25, 40,  60,  85, 120]
+UPGRADE_COST_DAMAGE    = [20, 35,  55,  80, 110]
+
+# ── Difficulty ────────────────────────────────────────────────────────────────
+DIFFICULTY_PRESETS = {
+    'easy':   dict(label='EASY',   hp_mult=0.6, dmg_mult=0.6, spawn_mult=1.5, gen_count=6),
+    'normal': dict(label='NORMAL', hp_mult=1.0, dmg_mult=1.0, spawn_mult=1.0, gen_count=9),
+    'hard':   dict(label='HARD',   hp_mult=1.5, dmg_mult=1.5, spawn_mult=0.7, gen_count=12),
+}
+LEVEL_HP_SCALE    = 0.15   # monster HP multiplier added per level
+LEVEL_DMG_SCALE   = 0.10   # monster damage multiplier added per level
+LEVEL_SPAWN_SCALE = 0.05   # spawn_mult reduced per level (faster spawns)
+LEVEL_GEN_SCALE   = 1      # extra generators added per level

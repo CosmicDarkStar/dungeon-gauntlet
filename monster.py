@@ -29,16 +29,17 @@ _TYPES = {
 class Monster:
     SIZE = TILE - 8   # 24 px
 
-    def __init__(self, x: float, y: float, mtype: str = 'grunt'):
+    def __init__(self, x: float, y: float, mtype: str = 'grunt',
+                 hp_mult: float = 1.0, dmg_mult: float = 1.0):
         cfg = _TYPES[mtype]
         self.mtype         = mtype
         self.fx            = float(x)
         self.fy            = float(y)
-        self.hp            = float(cfg['hp'])
-        self.max_hp        = float(cfg['hp'])
+        self.hp            = float(cfg['hp']) * hp_mult
+        self.max_hp        = self.hp
         self.speed         = cfg['speed']
         self.color         = cfg['color']
-        self.dmg           = cfg['dmg']
+        self.dmg           = cfg['dmg'] * dmg_mult
         self.score_value   = cfg['score']
         self.through_walls = cfg['walls']
         self.alive         = True

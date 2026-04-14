@@ -27,6 +27,12 @@ class Player:
         self.hp    = float(PLAYER_MAX_HP)
         self.score = 0
         self.coins = 0
+        # ── Upgrade levels (0 = base, max = MAX_UPGRADE_LEVEL) ────────────────
+        self.defence_lvl  = 0   # reduces damage taken
+        self.range_lvl    = 0   # increases shot range
+        self.shots_lvl    = 0   # increases max simultaneous shots
+        self.damage_lvl   = 0   # increases shot damage
+        # ── Movement / shooting state ─────────────────────────────────────────
         self._dx   = 0.0
         self._dy   = 0.0
         self.facing = (1, 0)    # last non-zero move direction (raw ints)
@@ -38,6 +44,25 @@ class Player:
     @property
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.fx), int(self.fy), self.W, self.H)
+
+    # ── Upgrade-derived stats ─────────────────────────────────────────────────
+
+    @property
+    def damage_reduction(self) -> float:
+        """Fraction of incoming damage blocked (0.0 – 0.40)."""
+        return self.defence_lvl * ATTR_DEFENCE_REDUX
+
+    @property
+    def effective_shot_range(self) -> float:
+        return SHOT_RANGE + self.range_lvl * ATTR_RANGE_BONUS
+
+    @property
+    def max_active_shots(self) -> int:
+        return ATTR_MAX_SHOTS_BASE + self.shots_lvl
+
+    @property
+    def shot_damage(self) -> float:
+        return ATTR_DAMAGE_BASE + self.damage_lvl * ATTR_DAMAGE_BONUS
 
     # ── Input ─────────────────────────────────────────────────────────────────
 
@@ -91,6 +116,9 @@ class Player:
             self.fy = new_fy
 
     def _fire(self, projectiles: list):
+        active = sum(1 for p in projectiles if p.owner == 'player')
+        if active >= self.max_active_shots:
+            return
         fx, fy = self.facing
         length = math.hypot(fx, fy)
         if length == 0:
@@ -100,14 +128,17 @@ class Player:
             fy /= length
         projectiles.append(
             Projectile(self.rect.centerx, self.rect.centery,
-                       fx, fy, COL_SHOT_P, SHOT_SPEED, SHOT_RANGE, 'player'))
+                       fx, fy, COL_SHOT_P, SHOT_SPEED,
+                       self.effective_shot_range, 'player',
+                       damage=self.shot_damage))
 
     # ── Public ────────────────────────────────────────────────────────────────
 
     def take_damage(self, amount: float):
         if self._inv > 0:
             return
-        self.hp    = max(0.0, self.hp - amount)
+        reduced    = amount * (1.0 - self.damage_reduction)
+        self.hp    = max(0.0, self.hp - reduced)
         self._inv  = 0.5
         self.flash = 0.3
 

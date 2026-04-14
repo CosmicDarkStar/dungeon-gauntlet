@@ -9,7 +9,8 @@ class Projectile:
     def __init__(self, x: float, y: float,
                  dx: float, dy: float,
                  color: tuple, speed: float,
-                 max_range: float, owner: str):
+                 max_range: float, owner: str,
+                 damage: float = 1.0):
         self.x         = x
         self.y         = y
         self.dx        = dx
@@ -18,6 +19,7 @@ class Projectile:
         self.speed     = speed
         self.max_range = max_range
         self.owner     = owner   # 'player' | 'monster'
+        self.damage    = damage
         self.dist      = 0.0
         self.alive     = True
 
