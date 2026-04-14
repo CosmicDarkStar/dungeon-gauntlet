@@ -43,21 +43,41 @@ class Generator:
     def _try_spawn(self, monsters: list, tilemap):
         if len(monsters) >= MAX_MONSTERS:
             return
-        tx = self.rect.centerx // TILE
-        ty = self.rect.centery  // TILE
-        for _ in range(30):
-            ox = random.randint(-3, 3)
-            oy = random.randint(-3, 3)
-            nx, ny = tx + ox, ty + oy
-            if not tilemap.is_wall(nx, ny):
+
+        gx = self.rect.centerx // TILE
+        gy = self.rect.centery  // TILE
+
+        # Build set of tiles already occupied by a living monster
+        occupied = set()
+        for m in monsters:
+            if m.alive:
+                occupied.add((int(m.fx + Monster.SIZE / 2) // TILE,
+                              int(m.fy + Monster.SIZE / 2) // TILE))
+
+        # Search outward from the generator: radius 1 (adjacent) first,
+        # then 2 and 3.  Stop at the first free floor tile found.
+        for radius in range(1, 4):
+            ring = [
+                (gx + ox, gy + oy)
+                for ox in range(-radius, radius + 1)
+                for oy in range(-radius, radius + 1)
+                if abs(ox) == radius or abs(oy) == radius
+            ]
+            random.shuffle(ring)
+            for tx, ty in ring:
+                if tilemap.is_wall(tx, ty):
+                    continue
+                if (tx, ty) in occupied:
+                    continue
                 mtype = random.choices(
                     ['grunt', 'ghost', 'demon'],
                     weights=[6, 3, 1]
                 )[0]
-                monsters.append(Monster(nx * TILE, ny * TILE, mtype,
+                monsters.append(Monster(tx * TILE, ty * TILE, mtype,
                                         hp_mult=self._hp_mult,
                                         dmg_mult=self._dmg_mult))
                 return
+        # No space found — skip this spawn attempt
 
     # ── Public ────────────────────────────────────────────────────────────────
 

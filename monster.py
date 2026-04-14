@@ -53,8 +53,9 @@ class Monster:
 
     # ── Update ────────────────────────────────────────────────────────────────
 
-    def update(self, dt: float, tilemap, player, projectiles: list):
-        self._move(dt, tilemap, player)
+    def update(self, dt: float, tilemap, player, projectiles: list,
+               monsters: list):
+        self._move(dt, tilemap, player, monsters)
 
         if self.mtype == 'demon':
             self._shoot_cd -= dt
@@ -70,7 +71,7 @@ class Monster:
 
     # ── Private ───────────────────────────────────────────────────────────────
 
-    def _move(self, dt: float, tilemap, player):
+    def _move(self, dt: float, tilemap, player, monsters: list):
         px, py = player.rect.center
         mx = self.fx + self.SIZE / 2
         my = self.fy + self.SIZE / 2
@@ -91,19 +92,28 @@ class Monster:
                 nx, ny = wnx / ln, wny / ln
 
         step = self.speed * dt
-        if self.through_walls:
-            self.fx += nx * step
-            self.fy += ny * step
-        else:
-            new_fx = self.fx + nx * step
-            test   = pygame.Rect(int(new_fx), int(self.fy), self.SIZE, self.SIZE)
-            if not _wall_check(tilemap, test):
-                self.fx = new_fx
 
-            new_fy = self.fy + ny * step
-            test   = pygame.Rect(int(self.fx), int(new_fy), self.SIZE, self.SIZE)
-            if not _wall_check(tilemap, test):
-                self.fy = new_fy
+        # X axis
+        new_fx = self.fx + nx * step
+        test_x = pygame.Rect(int(new_fx), int(self.fy), self.SIZE, self.SIZE)
+        if (self.through_walls or not _wall_check(tilemap, test_x)) \
+                and not self._overlaps_monster(test_x, monsters):
+            self.fx = new_fx
+
+        # Y axis
+        new_fy = self.fy + ny * step
+        test_y = pygame.Rect(int(self.fx), int(new_fy), self.SIZE, self.SIZE)
+        if (self.through_walls or not _wall_check(tilemap, test_y)) \
+                and not self._overlaps_monster(test_y, monsters):
+            self.fy = new_fy
+
+    def _overlaps_monster(self, rect: pygame.Rect, monsters: list) -> bool:
+        for m in monsters:
+            if m is self or not m.alive:
+                continue
+            if rect.colliderect(m.rect):
+                return True
+        return False
 
     def _fire(self, player, projectiles: list):
         cx, cy = self.rect.center

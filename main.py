@@ -244,7 +244,7 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
             gen.update(dt, monsters, tilemap)
 
         for m in monsters:
-            m.update(dt, tilemap, player, projectiles)
+            m.update(dt, tilemap, player, projectiles, monsters)
 
         for p in projectiles:
             p.update(dt, tilemap)
