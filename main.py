@@ -239,7 +239,7 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
         # ── Update ───────────────────────────────────────────────────────────
         exit_t += dt
         player.handle_input(keys)
-        player.update(dt, tilemap, projectiles)
+        player.update(dt, tilemap, projectiles, monsters)
 
         for gen in generators:
             gen.update(dt, monsters, tilemap)
@@ -280,8 +280,17 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
                                                                  COIN_DROP_MAX)))
                             break
             elif p.owner == 'monster':
-                if p.rect.colliderect(player.rect):
-                    player.take_damage(DEMON_SHOT_DMG * diff['dmg_mult'])
+                # Shots can't pass through other monsters (friendly fire,
+                # no health drop).  Skip self-hit by ignoring the first
+                # Monster.SIZE pixels of travel.
+                if p.dist > Monster.SIZE:
+                    for m in live:
+                        if p.rect.colliderect(m.rect):
+                            m.take_damage(p.damage)
+                            p.alive = False
+                            break   # no health drop for monster-killed monsters
+                if p.alive and p.rect.colliderect(player.rect):
+                    player.take_damage(p.damage * diff['dmg_mult'])
                     p.alive = False
 
         # ── Drops: update, pickup, cull ───────────────────────────────────────

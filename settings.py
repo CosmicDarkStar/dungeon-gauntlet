@@ -60,9 +60,10 @@ DEMON_HP    = 6
 GRUNT_SPEED = 75     # px / s
 GHOST_SPEED = 58
 DEMON_SPEED = 105
-GRUNT_DMG   = 8      # hp / s on contact
-GHOST_DMG   = 5
-DEMON_DMG   = 12
+GRUNT_DMG      = 8    # hp / s on contact
+GHOST_DMG      = 5    # unused for movement damage; kept for reference
+GHOST_TOUCH_DMG = 25  # flat damage when a ghost touches the player (then dies)
+DEMON_DMG      = 12
 DEMON_SHOT_DMG = 10
 
 GENERATOR_HP         = 12

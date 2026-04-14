@@ -65,9 +65,15 @@ class Monster:
 
         self.flash = max(0.0, self.flash - dt)
 
-        # Continuous contact damage
+        # Contact damage
         if self.rect.colliderect(player.rect):
-            player.take_damage(self.dmg * dt)
+            if self.mtype == 'ghost':
+                # Ghost sacrifices itself on touch for a single burst of damage
+                player.take_damage(GHOST_TOUCH_DMG)
+                self.alive = False
+                self.hp    = 0
+            else:
+                player.take_damage(self.dmg * dt)
 
     # ── Private ───────────────────────────────────────────────────────────────
 
@@ -137,7 +143,8 @@ class Monster:
             return
         projectiles.append(
             Projectile(cx, cy, dx / dist, dy / dist,
-                       COL_SHOT_D, SHOT_SPEED * 0.55, SHOT_RANGE * 0.75, 'monster'))
+                       COL_SHOT_D, SHOT_SPEED * 0.55, SHOT_RANGE * 0.75, 'monster',
+                       damage=DEMON_SHOT_DMG))
 
     # ── Public ────────────────────────────────────────────────────────────────
 

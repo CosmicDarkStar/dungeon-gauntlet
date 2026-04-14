@@ -82,8 +82,8 @@ class Player:
 
     # ── Update ────────────────────────────────────────────────────────────────
 
-    def update(self, dt: float, tilemap, projectiles: list):
-        self._move(tilemap, dt)
+    def update(self, dt: float, tilemap, projectiles: list, monsters: list = None):
+        self._move(tilemap, dt, monsters or [])
 
         # Shooting
         self._shoot_cd = max(0.0, self._shoot_cd - dt)
@@ -102,18 +102,24 @@ class Player:
 
     # ── Private ───────────────────────────────────────────────────────────────
 
-    def _move(self, tilemap, dt: float):
+    def _move(self, tilemap, dt: float, monsters: list):
         spd = PLAYER_SPEED * dt
 
         new_fx = self.fx + self._dx * spd
         test   = pygame.Rect(int(new_fx), int(self.fy), self.W, self.H)
-        if not _wall_check(tilemap, test):
+        if not _wall_check(tilemap, test) and not self._overlaps_monster(test, monsters):
             self.fx = new_fx
 
         new_fy = self.fy + self._dy * spd
         test   = pygame.Rect(int(self.fx), int(new_fy), self.W, self.H)
-        if not _wall_check(tilemap, test):
+        if not _wall_check(tilemap, test) and not self._overlaps_monster(test, monsters):
             self.fy = new_fy
+
+    def _overlaps_monster(self, rect: pygame.Rect, monsters: list) -> bool:
+        for m in monsters:
+            if m.alive and rect.colliderect(m.rect):
+                return True
+        return False
 
     def _fire(self, projectiles: list):
         active = sum(1 for p in projectiles if p.owner == 'player')
