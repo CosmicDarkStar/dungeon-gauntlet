@@ -75,6 +75,10 @@ DROP_PICKUP_RADIUS = 22      # px from player centre to collect
 COL_HEALTH_DROP = ( 60, 220,  80)   # bright green
 COL_COIN_DROP   = (255, 200,  30)   # gold
 
+# ── Exit portal ───────────────────────────────────────────────────────────────
+COL_EXIT      = ( 20, 210, 190)   # teal fill
+COL_EXIT_EDGE = (160, 255, 240)   # bright teal border / glyph
+
 # ── Player upgrades ───────────────────────────────────────────────────────────
 MAX_UPGRADE_LEVEL   = 5
 ATTR_DEFENCE_REDUX  = 0.08   # damage reduction fraction per defence level

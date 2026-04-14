@@ -212,7 +212,11 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
     monsters:    list[Monster]    = []
     projectiles: list[Projectile] = []
     drops:       list[Drop]       = []
-    hud = HUD(sw, sh)
+    hud       = HUD(sw, sh)
+    exit_rect = pygame.Rect(tilemap.exit_tile[0] * TILE,
+                             tilemap.exit_tile[1] * TILE,
+                             TILE, TILE)
+    exit_t    = 0.0   # pulse timer
 
     for gen in generators:
         gen._try_spawn(monsters, tilemap)
@@ -232,6 +236,7 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
         keys = pygame.key.get_pressed()
 
         # ── Update ───────────────────────────────────────────────────────────
+        exit_t += dt
         player.handle_input(keys)
         player.update(dt, tilemap, projectiles)
 
@@ -298,6 +303,7 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
         # ── Draw ─────────────────────────────────────────────────────────────
         screen.fill(DARK_BG)
         tilemap.draw(screen, camera)
+        _draw_exit(screen, camera, exit_rect, exit_t)
 
         for gen in generators:
             gen.draw(screen, camera)
@@ -318,9 +324,48 @@ def _run_level(screen: pygame.Surface, sw: int, sh: int,
         if player.hp <= 0:
             return 'died', player
 
+        if player.rect.colliderect(exit_rect):
+            _level_complete_flash(screen, sw, sh, level)
+            return 'complete', player
+
         if generators and all(not g.alive for g in generators):
             _level_complete_flash(screen, sw, sh, level)
             return 'complete', player
+
+
+# ── Exit portal drawing ───────────────────────────────────────────────────────
+
+def _draw_exit(screen: pygame.Surface, camera, exit_rect: pygame.Rect, t: float):
+    import math
+    r   = camera.apply(exit_rect)
+    pulse = (math.sin(t * 2.8) + 1) / 2          # 0.0 – 1.0
+
+    # Pulsing teal fill
+    intensity = 0.45 + 0.55 * pulse
+    fill = tuple(int(c * intensity) for c in COL_EXIT)
+    pygame.draw.rect(screen, fill, r)
+
+    # Bright border (thicker at peak pulse)
+    border_w = 1 + int(pulse * 2)
+    pygame.draw.rect(screen, COL_EXIT_EDGE, r, border_w)
+
+    # Downward-pointing chevron (▼) drawn with two lines
+    cx, cy = r.centerx, r.centery
+    pad = r.w // 5
+    tip = cy + r.h // 4
+    left  = (cx - pad * 2, cy - r.h // 8)
+    right = (cx + pad * 2, cy - r.h // 8)
+    mid   = (cx, tip)
+    pygame.draw.line(screen, COL_EXIT_EDGE, left,  mid, 2)
+    pygame.draw.line(screen, COL_EXIT_EDGE, right, mid, 2)
+
+    # Second smaller chevron above
+    offset = r.h // 5
+    left2  = (cx - pad,        cy - r.h // 8 - offset)
+    right2 = (cx + pad,        cy - r.h // 8 - offset)
+    mid2   = (cx, tip - offset)
+    pygame.draw.line(screen, COL_EXIT_EDGE, left2, mid2, 1)
+    pygame.draw.line(screen, COL_EXIT_EDGE, right2, mid2, 1)
 
 
 # ── Level complete flash ──────────────────────────────────────────────────────

@@ -26,7 +26,8 @@ class TileMap:
         self.tiles  = [[WALL] * width for _ in range(height)]
         self.rooms: list[Room] = []
         self.generator_tiles: list[tuple[int, int]] = []
-        self.player_start: tuple[int, int] = (TILE * 5, TILE * 5)
+        self.exit_tile:       tuple[int, int]        = (0, 0)
+        self.player_start:    tuple[int, int]        = (TILE * 5, TILE * 5)
         self._generate()
         if max_generators is not None:
             self.generator_tiles = self.generator_tiles[:max_generators]
@@ -66,6 +67,11 @@ class TileMap:
         cx, cy = self.rooms[0].center
         self.player_start = (cx * TILE + TILE // 2 - (TILE - 4) // 2,
                              cy * TILE + TILE // 2 - (TILE - 4) // 2)
+
+        # Exit portal: room whose centre is farthest from the player start room
+        start_centre = self.rooms[0].center
+        farthest = max(self.rooms[1:], key=lambda r: _dist(r.center, start_centre))
+        self.exit_tile = farthest.center   # tile coords (tx, ty)
 
         # One generator per room, skip first two (safe start zone)
         for room in self.rooms[2:]:
